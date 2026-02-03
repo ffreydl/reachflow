@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 
-const aspectRatios = [
+export const aspectRatios = [
   { id: "1:1", label: "1:1", desc: "Feed" },
   { id: "4:5", label: "4:5", desc: "Portrait" },
   { id: "9:16", label: "9:16", desc: "Story/Reel" },

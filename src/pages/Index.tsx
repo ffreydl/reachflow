@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import TopBar from "@/components/TopBar";
 import ImageGrid from "@/components/ImageGrid";
 import FloatingPromptBar from "@/components/FloatingPromptBar";
 import RightSidebar from "@/components/RightSidebar";
 import MobileSidebar from "@/components/MobileSidebar";
+import { objectives } from "@/components/ObjectiveSelector";
+import { angles } from "@/components/AngleSelector";
+import { aspectRatios } from "@/components/AspectRatioSelector";
 
 const IMAGE_API_BASE =
-  "http://10.127.168.26:5678/webhook/68ff807a-568d-49cc-8398-cccb98e6b5a1/image/";
+  "http://10.127.168.26:5678/webhook/68ff807a-568d-49cc-8398-cccb98e6b5a1/image";
+
+const DEFAULT_OBJECTIVE = objectives[0]?.id ?? "";
+const DEFAULT_ANGLE = angles[0]?.id ?? "";
+const DEFAULT_RATIO = aspectRatios[0]?.id ?? "";
 
 const isLikelyImageUrl = (value: unknown): value is string =>
   typeof value === "string" && /^https?:\/\//i.test(value);
@@ -28,11 +35,27 @@ const extractImageUrl = (data: unknown): string | null => {
 };
 
 const Index = () => {
-  const [selectedObjective, setSelectedObjective] = useState("awareness");
-  const [selectedAngle, setSelectedAngle] = useState("social-proof");
-  const [selectedRatio, setSelectedRatio] = useState("1:1");
+  const [selectedObjective, setSelectedObjective] = useState(DEFAULT_OBJECTIVE);
+  const [selectedAngle, setSelectedAngle] = useState(DEFAULT_ANGLE);
+  const [selectedRatio, setSelectedRatio] = useState(DEFAULT_RATIO);
   const [images, setImages] = useState<string[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [promptResetKey, setPromptResetKey] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  const handleNewCreative = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+
+    setIsGenerating(false);
+    setImages([]);
+    setSelectedObjective(DEFAULT_OBJECTIVE);
+    setSelectedAngle(DEFAULT_ANGLE);
+    setSelectedRatio(DEFAULT_RATIO);
+    setPromptResetKey((prev) => prev + 1);
+  };
 
   const handleGenerate = async (prompt: string) => {
     console.log("Generating ad creative:", prompt, {
@@ -41,12 +64,20 @@ const Index = () => {
       ratio: selectedRatio,
     });
 
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     setIsGenerating(true);
     setImages([]); // Clear current images
 
     try {
       const response = await fetch(
-        `${IMAGE_API_BASE}/${encodeURIComponent(prompt)}`
+        `${IMAGE_API_BASE}/${encodeURIComponent(prompt)}`,
+        { signal: controller.signal }
       );
 
       if (!response.ok) {
@@ -62,6 +93,9 @@ const Index = () => {
 
       setImages([imageUrl]);
     } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
       console.error("Image generation failed:", error);
       setImages([]);
       toast.error("Bild konnte nicht generiert werden", {
@@ -75,7 +109,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top navigation bar */}
-      <TopBar />
+      <TopBar onNewCreative={handleNewCreative} />
 
       {/* Main content area */}
       <main className="flex-1 pt-20 pb-8 px-4 lg:px-6">
@@ -99,8 +133,9 @@ const Index = () => {
 
             {/* Floating prompt bar */}
             <div className="mt-6">
-              <FloatingPromptBar 
-                onGenerate={handleGenerate} 
+              <FloatingPromptBar
+                key={promptResetKey}
+                onGenerate={handleGenerate}
                 isGenerating={isGenerating}
               />
             </div>

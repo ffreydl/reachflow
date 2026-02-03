@@ -1,6 +1,6 @@
 import { MessageSquareQuote, Lightbulb, Tag, Clock, Award, Zap } from "lucide-react";
 
-const angles = [
+export const angles = [
   { id: "social-proof", label: "Social Proof", icon: MessageSquareQuote },
   { id: "offer", label: "Angebot", icon: Tag },
   { id: "authority", label: "Autorität", icon: Award },

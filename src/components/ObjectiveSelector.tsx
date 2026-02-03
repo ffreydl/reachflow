@@ -1,6 +1,6 @@
 import { Eye, Target, RefreshCw, Users, Megaphone } from "lucide-react";
 
-const objectives = [
+export const objectives = [
   { id: "awareness", label: "Awareness", icon: Eye },
   { id: "conversion", label: "Conversion", icon: Target },
   { id: "retargeting", label: "Retargeting", icon: RefreshCw },
