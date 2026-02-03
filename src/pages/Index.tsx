@@ -28,7 +28,7 @@ const extractImageUrl = (data: unknown): string | null => {
 };
 
 const Index = () => {
-  const [selectedObjective, setSelectedObjective] = useState("conversion");
+  const [selectedObjective, setSelectedObjective] = useState("awareness");
   const [selectedAngle, setSelectedAngle] = useState("social-proof");
   const [selectedRatio, setSelectedRatio] = useState("1:1");
   const [images, setImages] = useState<string[]>([]);
