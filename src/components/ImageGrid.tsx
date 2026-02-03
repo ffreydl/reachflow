@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ThumbsUp, ThumbsDown, MoreHorizontal, Download, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/sonner";
 
 interface ImageGridProps {
   images: string[];
@@ -9,6 +10,51 @@ interface ImageGridProps {
 
 const ImageGrid = ({ images, isLoading = false }: ImageGridProps) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const getDownloadFileName = (src: string, index: number) => {
+    try {
+      const url = new URL(src);
+      const lastSegment = url.pathname.split("/").pop();
+      if (lastSegment && lastSegment.includes(".")) {
+        return lastSegment;
+      }
+    } catch {
+      // Ignore invalid URLs and fall back to default.
+    }
+
+    return `ad-creative-${index + 1}.png`;
+  };
+
+  const handleDownload = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    src: string,
+    index: number
+  ) => {
+    event.stopPropagation();
+
+    try {
+      const response = await fetch(src);
+      if (!response.ok) {
+        throw new Error(`Download failed with status ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = getDownloadFileName(src, index);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error("Download failed:", error);
+      toast.error("Download fehlgeschlagen", {
+        description: "Das Bild wird in einem neuen Tab geöffnet.",
+      });
+      window.open(src, "_blank", "noopener,noreferrer");
+    }
+  };
 
   // Loading state with single skeleton placeholder
   if (isLoading) {
@@ -76,6 +122,8 @@ const ImageGrid = ({ images, isLoading = false }: ImageGridProps) => {
               className={`absolute bottom-3 right-3 p-2 rounded-full bg-white/20 backdrop-blur-sm text-white transition-all duration-200 hover:bg-white/30 ${
                 hoveredIndex === index ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
               }`}
+              onClick={(event) => handleDownload(event, src, index)}
+              aria-label="Download image"
             >
               <Download className="w-4 h-4" />
             </button>

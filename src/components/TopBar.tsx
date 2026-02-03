@@ -15,7 +15,7 @@ const TopBar = () => {
 
             <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-primary text-primary-foreground font-medium text-sm transition-all duration-150 ease-out hover:shadow-glow btn-press">
                 <Plus className="w-4 h-4" strokeWidth={2.5} />
-                <span>New Image</span>
+                <span>Neues Creative</span>
             </button>
         </header>
     );
