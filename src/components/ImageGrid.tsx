@@ -50,15 +50,8 @@ const ImageGrid = ({ images, isLoading = false }: ImageGridProps) => {
     } catch (error) {
       console.error("Download failed:", error);
       toast.error("Download fehlgeschlagen", {
-        description: "Das Bild wird direkt geöffnet.",
+        description: "Bitte versuche es erneut.",
       });
-      const fallbackLink = document.createElement("a");
-      fallbackLink.href = src;
-      fallbackLink.download = getDownloadFileName(src, index);
-      fallbackLink.rel = "noopener noreferrer";
-      document.body.appendChild(fallbackLink);
-      fallbackLink.click();
-      fallbackLink.remove();
     }
   };
 
