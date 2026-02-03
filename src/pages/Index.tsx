@@ -18,9 +18,13 @@ const extractImageUrl = (data: unknown): string | null => {
   }
 
   const record = data as Record<string, unknown>;
-  const value = record.url;
+  const urlValue = record.url;
+  if (isLikelyImageUrl(urlValue)) {
+    return urlValue;
+  }
 
-  return isLikelyImageUrl(value) ? value : null;
+  const linkValue = record.link;
+  return isLikelyImageUrl(linkValue) ? linkValue : null;
 };
 
 const Index = () => {
@@ -53,7 +57,7 @@ const Index = () => {
       const imageUrl = extractImageUrl(data);
 
       if (!imageUrl) {
-        throw new Error("API response did not include a url field.");
+        throw new Error("API response did not include a url or link field.");
       }
 
       setImages([imageUrl]);
